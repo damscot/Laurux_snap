@@ -1,0 +1,165 @@
+name: laurux
+#title: 'Laurux'
+version: '3.68.5'
+summary: Gestion Entreprise, Caisse Point de Vente GNU GPL Français
+description: |
+  Distribué sous licence GPL Laurux est un logiciel de gestion (PGI)
+  destiné aux petites entreprises, aux artisans et aux commerçants.
+  Interfacé avec une base de données MySQL, il allie une robustesse
+  d'utilisation avec une ergonomie très confortable.
+grade: devel
+#grade: candidate
+#grade: stable
+confinement: devmode
+#confinement: strict
+icon: 'Icones/Larus.png'
+#license: 'GPL-3.0'
+base: core20
+architectures: 
+- build-on: amd64
+
+apps:
+  Laurux:
+    command: bin/desktop-launch $SNAP/bin/Laurux
+    desktop: usr/share/applications/Laurux.desktop
+    environment:
+      # Fallback to XWayland if running in a Wayland session.
+      DISABLE_WAYLAND: 1
+    plugs:
+      - desktop
+      - desktop-legacy
+      # wayland to be removed for strict qt confinement
+      # - wayland
+      - x11
+      - locale-control
+      - unity7
+      - opengl
+      - home
+      - network
+      - removable-media
+      - audio-playback
+      - cups-control
+      - raw-usb
+      - browser-support
+
+  Pos:
+    command: bin/desktop-launch $SNAP/bin/Laurux-Pos
+    desktop: usr/share/applications/Laurux-Pos.desktop
+    environment:
+      # Fallback to XWayland if running in a Wayland session.
+      DISABLE_WAYLAND: 1
+    plugs:
+      - desktop
+      - desktop-legacy
+      # wayland to be removed for strict qt confinement
+      # - wayland
+      - x11
+      - locale-control
+      - unity7
+      - opengl
+      - home
+      - network
+      - removable-media
+      - audio-playback
+      - cups-control
+      - raw-usb
+      - browser-support
+parts:
+  laurux-pos-build:
+    # See 'snapcraft plugins'
+    source: https://github.com/damscot/Laurux-Pos.git
+    #source-tag: 'v3.68.5'
+    source-branch: 'master'
+    plugin: make
+    build-packages:
+    - gambas3
+    - gambas3-gb-sdl-sound
+    - gambas3-gb-form-print
+    stage-packages:
+    - locales-all
+    - gambas3
+    - gambas3-gb-sdl-sound
+    - gambas3-gb-form-print
+    - gcc
+    - mysql-client
+    - sqlite3
+    - libpulse0
+    - freeglut3
+    - libglu1-mesa
+    - okular
+    after:
+      - laurux-build
+  
+  laurux-build:
+    # See 'snapcraft plugins'
+    source: https://github.com/damscot/Laurux.git
+    #source-tag: 'v3.68.5'
+    source-branch: 'master'
+    plugin: make
+    build-packages:
+    - gambas3
+    - gambas3-gb-sdl-sound
+    - gambas3-gb-form-print
+    stage-packages:
+    - locales-all
+    - gambas3
+    - gambas3-gb-sdl-sound
+    - gambas3-gb-form-print
+    - gcc
+    - mysql-client
+    - sqlite3
+    - libpulse0
+    - freeglut3
+    - libglu1-mesa
+    - okular
+    - xsane
+    - kate
+    after:
+      - desktop-qt5
+
+  desktop-qt5:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: qt
+    plugin: make
+    make-parameters: ["FLAVOR=qt5"]
+    build-packages:
+      - build-essential
+      - qtbase5-dev
+      - dpkg-dev
+    stage-packages:
+      - libxkbcommon0
+      - ttf-ubuntu-font-family
+      - dmz-cursor-theme
+      - light-themes
+      - adwaita-icon-theme
+      - gnome-themes-standard
+      - shared-mime-info
+      - libqt5gui5
+      - libgdk-pixbuf2.0-0
+      - libqt5svg5 # for loading icon themes which are svg
+      - try: [appmenu-qt5] # not available on core18
+      - locales-all
+      - xdg-user-dirs
+      - fcitx-frontend-qt5
+      - libatk1.0-0
+      - libgtk2.0-0
+      - libxcomposite1
+      - libxcursor1
+      - libxi6
+      - libxinerama1
+      - libxrandr2
+
+  wrapper:
+    plugin: dump
+    after: 
+      - laurux-pos-build
+    source: .
+    organize:
+      Laurux: bin/Laurux
+      Laurux-Pos: bin/Laurux-Pos
+
+# snapcraft build
+# sudo snap install laurux_3.68.5_amd64.snap --dangerous --devmode
+#    dans le root snap run --shell laurux.Laurux
+#    manque /usr/lib/locale/locale-archive
+#    manque /usr/lib/gambas3/ au lieu de /snap/laurux/current/usr/lib/gambas3/

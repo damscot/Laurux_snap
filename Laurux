@@ -1,0 +1,17 @@
+#!/bin/bash
+
+case "$SNAP_ARCH" in
+	"amd64") ARCH='x86_64-linux-gnu'
+	;;
+	"i386") ARCH='i386-linux-gnu'
+	;;
+	*)
+		echo "Unsupported architecture for this app build"
+		exit 1
+	;;
+esac
+
+export GB_PATH=$SNAP/usr/bin/gbx3
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SNAP/usr/lib/pulseaudio"
+
+exec $SNAP/usr/bin/gbr3 $SNAP/usr/bin/Laurux "$@"
