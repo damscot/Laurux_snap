@@ -1,0 +1,55 @@
+From 2ee27b9df9317e547a910ef401972b81ffd8b3e7 Mon Sep 17 00:00:00 2001
+From: Damien COTTIER <damscot@gmail.com>
+Date: Mon, 18 Jan 2021 00:13:34 +0100
+Subject: [PATCH 2/2] Use HOME env variable if it exist
+
+Snap use HOME variable in snap directory for strict
+confinement. Snap is not allowed to access to /home/user/.config
+then use of getpwuid can lead in wrong user home path.
+---
+ main/share/gb_file_temp.h | 19 ++++++++++++++-----
+ 1 file changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/main/share/gb_file_temp.h b/main/share/gb_file_temp.h
+index 1d41e9dd3..6a5ad580d 100644
+--- a/main/share/gb_file_temp.h
++++ b/main/share/gb_file_temp.h
+@@ -1268,21 +1268,30 @@ char *FILE_get_home(void)
+ 
+ 	if (!_home || _uid != uid)
+ 	{
++		char *env_home;
+ #ifdef PROJECT_EXEC
+ 		STRING_free(&_home);
+ #else
+ 		STR_free(_home);
+ #endif
+-		info = getpwuid(uid);
+-		if (info)
++		env_home = getenv("HOME");
++		if (env_home) {
+ #ifdef PROJECT_EXEC
+-			_home = STRING_new_zero(info->pw_dir);
++				_home = STRING_new_zero(env_home);
+ #else
+-			_home = STR_copy(info->pw_dir);
++				_home = STR_copy(env_home);
+ #endif
++		} else {
++			info = getpwuid(uid);
++			if (info)
++#ifdef PROJECT_EXEC
++				_home = STRING_new_zero(info->pw_dir);
++#else
++				_home = STR_copy(info->pw_dir);
++#endif
++		}
+ 		_uid = uid;
+ 	}
+ 
+ 	return _home;
+ }
+-
+-- 
+2.25.1
+

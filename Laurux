@@ -11,7 +11,7 @@ case "$SNAP_ARCH" in
 	;;
 esac
 
-export GB_PATH=$SNAP/usr/bin/gbx3
-export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SNAP/usr/lib/pulseaudio"
+export GB_PATH=$SNAP/bin/gbx3
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$SNAP/usr/lib/pulseaudio:$SNAP/usr/lib/x86_64-linux-gnu/sane"
 
-exec $SNAP/usr/bin/gbr3 $SNAP/usr/bin/Laurux "$@"
+exec $SNAP/bin/gbr3 $SNAP/usr/bin/Laurux "$@"

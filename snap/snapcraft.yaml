@@ -1,17 +1,17 @@
 name: laurux
 #title: 'Laurux'
-version: '3.68.5'
+version: '3.68.6'
 summary: Gestion Entreprise, Caisse Point de Vente GNU GPL Français
 description: |
   Distribué sous licence GPL Laurux est un logiciel de gestion (PGI)
   destiné aux petites entreprises, aux artisans et aux commerçants.
   Interfacé avec une base de données MySQL, il allie une robustesse
   d'utilisation avec une ergonomie très confortable.
-grade: devel
+#grade: devel
 #grade: candidate
-#grade: stable
-confinement: devmode
-#confinement: strict
+grade: stable
+#confinement: devmode
+confinement: strict
 icon: 'Icones/Larus.png'
 #license: 'GPL-3.0'
 base: core20
@@ -64,58 +64,309 @@ apps:
       - cups-control
       - raw-usb
       - browser-support
+
+  Gambas3:
+    command: bin/desktop-launch $SNAP/bin/Gambas3
+    #desktop: usr/share/applications/Gambas3.desktop #TODO
+    environment:
+      # Fallback to XWayland if running in a Wayland session.
+      DISABLE_WAYLAND: 1
+    plugs:
+      - desktop
+      - desktop-legacy
+      # wayland to be removed for strict qt confinement
+      # - wayland
+      - x11
+      - locale-control
+      - unity7
+      - opengl
+      - home
+      - network
+      - removable-media
+      - audio-playback
+      - cups-control
+      - raw-usb
+      - browser-support
+
+#Layout is mandatory for JIT compiler
+layout:
+  /usr/bin/ar:
+    symlink: $SNAP/usr/bin/ar
+  /usr/bin/as:
+    symlink: $SNAP/usr/bin/as
+  /usr/bin/gcc:
+    symlink: $SNAP/usr/bin/gcc
+  /usr/bin/g++:
+    symlink: $SNAP/usr/bin/g++
+  /usr/bin/gdb:
+    bind-file: $SNAP/usr/bin/gdb
+  /usr/bin/ld:
+    symlink: $SNAP/usr/bin/ld
+  /usr/lib/gcc:
+    bind: $SNAP/usr/lib/gcc
+  /usr/include:
+    bind: $SNAP/usr/include
+  /usr/lib/x86_64-linux-gnu/libc_nonshared.a:
+    bind-file: $SNAP/usr/lib/x86_64-linux-gnu/libc_nonshared.a
+  /etc/sane.d:
+    bind: $SNAP/etc/sane.d
+
 parts:
   laurux-pos-build:
-    # See 'snapcraft plugins'
     source: https://github.com/damscot/Laurux-Pos.git
-    #source-tag: 'v3.68.5'
-    source-branch: 'master'
+    source-tag: 'v3.25.6'
+    #source-branch: 'master'
     plugin: make
     build-packages:
-    - gambas3
-    - gambas3-gb-sdl-sound
-    - gambas3-gb-form-print
-    stage-packages:
     - locales-all
-    - gambas3
-    - gambas3-gb-sdl-sound
-    - gambas3-gb-form-print
-    - gcc
+    stage-packages:
+    - libc-bin
     - mysql-client
     - sqlite3
-    - libpulse0
     - freeglut3
     - libglu1-mesa
+    - kio
     - okular
+    - lpr
     after:
       - laurux-build
   
   laurux-build:
-    # See 'snapcraft plugins'
     source: https://github.com/damscot/Laurux.git
-    #source-tag: 'v3.68.5'
-    source-branch: 'master'
+    source-tag: 'v3.68.6'
+    #source-branch: 'master'
     plugin: make
     build-packages:
-    - gambas3
-    - gambas3-gb-sdl-sound
-    - gambas3-gb-form-print
-    stage-packages:
     - locales-all
-    - gambas3
-    - gambas3-gb-sdl-sound
-    - gambas3-gb-form-print
-    - gcc
+    stage-packages:
+    - libc-bin
     - mysql-client
     - sqlite3
-    - libpulse0
     - freeglut3
     - libglu1-mesa
+    - kio
     - okular
     - xsane
     - kate
+    - lpr
     after:
-      - desktop-qt5
+      - gambas-build
+
+  gambas-build:
+    source: https://gitlab.com/gambas/gambas.git
+    source-tag: '3.14.3'
+    plugin: make
+    override-build: |
+            find $SNAPCRAFT_PROJECT_DIR/patch/gambas -name "*.patch" -type f -print0 | xargs -t -0 -n 1 patch -p1 -i
+            ./reconf-all && ./configure -C --disable-keyring --disable-qt4 --prefix=$SNAPCRAFT_PART_INSTALL && make -l 2.5 -j 4 && make install
+    build-packages:
+      - locales-all
+      # Package list recovered from https://gambaswiki.org/wiki/install
+      - build-essential
+      - g++
+      - automake
+      - autoconf
+      - libtool
+      - libbz2-dev
+      - libmysqlclient-dev
+      - unixodbc-dev
+      - libpq-dev
+      - postgresql-server-dev-12
+      - libsqlite0-dev
+      - libsqlite3-dev
+      - libglib2.0-dev
+      - libgtk2.0-dev
+      - libcurl4-gnutls-dev
+      - libgtkglext1-dev
+      - libpcre3-dev
+      - libsdl-sound1.2-dev
+      - libsdl-mixer1.2-dev
+      - libsdl-image1.2-dev
+      - libxml2-dev
+      - libxslt1-dev
+      - librsvg2-dev
+      - libpoppler-dev
+      - libpoppler-private-dev
+      - libpoppler-glib-dev
+      - libpoppler-cpp-dev
+      - libasound2-dev
+      - libdirectfb-dev
+      - libxtst-dev
+      - libffi-dev
+      - libglew-dev
+      - libimlib2-dev
+      - libv4l-dev
+      - libsdl-ttf2.0-dev
+      - libgdk-pixbuf2.0-dev
+      - linux-libc-dev
+      - libgstreamer1.0-dev
+      - libgstreamer-plugins-base1.0-dev
+      - libcairo2-dev
+      - libgsl-dev
+      - libncurses5-dev
+      - libgmime-2.6-dev
+      - llvm-dev
+      - llvm
+      - libalure-dev
+      - libgmp-dev
+      - libgtk-3-dev
+      - libsdl2-dev
+      - libsdl2-mixer-dev
+      - libsdl2-ttf-dev
+      - libsdl2-image-dev
+      - sane-utils
+      - libdumb1-dev
+      - libssl-dev
+      - libqt5opengl5-dev
+      - libqt5svg5-dev
+      - libqt5webkit5-dev
+      - libqt5x11extras5-dev
+      - qtbase5-dev
+      - qtwebengine5-dev
+      - libwebkit2gtk-4.0-dev
+    stage-packages:
+      # requiered for JIT
+      - build-essential
+      - g++
+      - gcc
+      - gcc-multilib
+      - llvm
+      - binutils
+      - gdb
+      - libffi-dev
+      - libglu1-mesa-dev
+      - libc6-dev
+      - libstdc++-10-dev
+      - libncurses-dev
+      - libx11-dev
+      - libxext-dev
+      # Package for gambas3 and application
+      - freeglut3
+      - libalure1
+      - libasn1-8-heimdal
+      - libasound2
+      - libassuan0
+      - libasyncns0
+      - libatk-bridge2.0-0
+      - libatspi2.0-0
+      - libbrotli1
+      - libbz2-1.0
+      - libcaca0
+      - libcairo2
+      - libcurl3-gnutls
+      - libcurl4-gnutls-dev
+      - libdirectfb-1.7-7
+      - libdumb1
+      - libepoxy0
+      - libffi7
+      - libflac8
+      - libfluidsynth2
+      - libgdk-pixbuf2.0-0
+      - libglew2.1
+      - libglib2.0-0
+      - libglu1-mesa
+      - libgmime-2.6-0
+      - libgmp10
+      - libgpgme11
+      - libgsl23
+      - libgslcblas0
+      - libgssapi3-heimdal
+      - libgstreamer1.0-0
+      - libgstreamer-plugins-base1.0-0
+      - libgtk2.0-0
+      - libgtk-3-0
+      - libgtkglext1
+      - libhcrypto4-heimdal
+      - libheimbase1-heimdal
+      - libheimntlm0-heimdal
+      - libhx509-5-heimdal
+      - libhyphen0
+      - libimlib2
+      - libinstpatch-1.0-2
+      - libjack-jackd2-0
+      - libkrb5-26-heimdal
+      - liblcms2-2
+      - libldap-2.4-2
+      - libltdl7
+      - libmad0
+      - libmikmod3
+      - libmodplug1
+      - libmpg123-0
+      - libmysqlclient21
+      - libncurses5
+      - libnghttp2-14
+      - libnspr4
+      - libnss3
+      - libodbc1
+      - libogg0
+      - libopenal1
+      - libopenjp2-7
+      - libopus0
+      - libopusfile0
+      - liborc-0.4-0
+      - libpangox-1.0-0
+      - libpcre3
+      - libpoppler97
+      - libpoppler-cpp0v5
+      - libpoppler-glib8
+      - libpoppler-private-dev
+      - libpq5
+      - libpsl5
+      - libpulse0
+      - libqt5opengl5
+      - libqt5positioning5
+      - libqt5printsupport5
+      - libqt5qml5
+      - libqt5quick5
+      - libqt5sensors5
+      - libqt5svg5
+      - libqt5webchannel5
+      - libqt5webkit5
+      - libqt5x11extras5
+      - libroken18-heimdal
+      - librsvg2-2
+      - librtmp1
+      - libsasl2-2
+      - libsdl1.2debian
+      - libsdl2-2.0-0
+      - libsdl2-image-2.0-0
+      - libsdl2-mixer-2.0-0
+      - libsdl2-ttf-2.0-0
+      - libsdl-image1.2
+      - libsdl-mixer1.2
+      - libsdl-sound1.2
+      - libsdl-ttf2.0-0
+      - libslang2
+      - libsndfile1
+      - libsndio7.0
+      - libsqlite0
+      - libsqlite3-0
+      - libssh-4
+      - libssl1.1
+      - libv4l-0
+      - libv4lconvert0
+      - libvorbis0a
+      - libvorbisenc2
+      - libvorbisfile3
+      - libwayland-cursor0
+      - libwayland-egl1
+      - libwebkit2gtk-4.0-37
+      - libwind0-heimdal
+      - libwoff1
+      - libxml2
+      - libxmu6
+      - libxslt1.1
+      - libxss1
+      - libxt6
+      - libxtst6
+      - linux-libc-dev
+      - postgresql-server-dev-12
+      #- qtbase5-dev try to reduce snap size
+      #- qtwebengine5-dev try to reduce snap size
+      - sane-utils
+      - unixodbc
+    after:
+      -  desktop-qt5
 
   desktop-qt5:
     source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
@@ -138,7 +389,6 @@ parts:
       - libgdk-pixbuf2.0-0
       - libqt5svg5 # for loading icon themes which are svg
       - try: [appmenu-qt5] # not available on core18
-      - locales-all
       - xdg-user-dirs
       - fcitx-frontend-qt5
       - libatk1.0-0
@@ -154,12 +404,62 @@ parts:
     after: 
       - laurux-pos-build
     source: .
+    build-packages:
+      # Locales gen
+      - locales
+      - libc-bin 
+    override-build: |
+      snapcraftctl build
+      echo "fr_FR ISO-8859-1" >> /etc/locale.gen
+      echo "fr_FR.UTF-8 UTF-8" >> /etc/locale.gen
+      echo "fr_FR@euro ISO-8859-15" >> /etc/locale.gen
+      locale-gen
+    stage-packages:
+      # Locales use
+      - locales
+      - libc-bin
+      # Debug Package
+      - git
+      - vim-tiny
+      - strace
+    override-prime: |
+      snapcraftctl prime
+      mkdir -p $SNAPCRAFT_PRIME/usr/lib/locale
+      install /usr/lib/locale/locale-archive $SNAPCRAFT_PRIME/usr/lib/locale/
+      echo "connect_timeout = 60" >> $SNAPCRAFT_PRIME/etc/sane.d/net.conf
+      echo "127.0.0.1" >> $SNAPCRAFT_PRIME/etc/sane.d/net.conf
     organize:
       Laurux: bin/Laurux
       Laurux-Pos: bin/Laurux-Pos
+      Gambas3: bin/Gambas3
+
+  cleanup:
+    after:  # Make this part run last; list all your other parts here
+      - wrapper
+    plugin: nil
+    build-snaps:  # List all content-snaps and base snaps you're using here
+      - core20
+    override-prime: |
+      set -eux
+      for snap in "core20"; do  # List all content-snaps and base snaps you're using here
+          cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
+      done
+      rm -rf $SNAPCRAFT_PRIME/usr/share/doc*
+
+  #cleanup:
+  #  after:  # Make this part run last; list all your other parts here
+  #    - wrapper
+  #  plugin: nil
+  #  build-snaps:  # List all content-snaps and base snaps you're using here
+  #    - core20
+  #    - <CONTENT-SNAP-1>
+  #    - <CONTENT-SNAP-2>
+  #  override-prime: |
+  #    set -eux
+  #    for snap in "<CORE-SNAP>" "<CONTENT-SNAP-1>" "<CONTENT-SNAP-2>"; do  # List all content-snaps and base snaps you're using here
+  #        cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
+  #    done
 
 # snapcraft build
-# sudo snap install laurux_3.68.5_amd64.snap --dangerous --devmode
+# sudo snap install laurux_3.68.5_amd64.snap --dangerous
 #    dans le root snap run --shell laurux.Laurux
-#    manque /usr/lib/locale/locale-archive
-#    manque /usr/lib/gambas3/ au lieu de /snap/laurux/current/usr/lib/gambas3/

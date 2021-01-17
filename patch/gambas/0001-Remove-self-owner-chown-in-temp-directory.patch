@@ -1,0 +1,33 @@
+From e3c8f08c793d8e1340f7e332b62f228548ae2410 Mon Sep 17 00:00:00 2001
+From: Damien COTTIER <damscot@gmail.com>
+Date: Wed, 13 Jan 2021 23:52:21 +0100
+Subject: [PATCH 1/2] Remove self owner chown in temp directory
+
+temp directory create by mkdir in TEMP_DIR should be already with
+uid/gid. This operation fail without catch capabilities leading in
+gambas application to fail in strict mode under snap confinment.
+---
+ main/share/gb_file_temp.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/main/share/gb_file_temp.h b/main/share/gb_file_temp.h
+index 75a82576e..1d41e9dd3 100644
+--- a/main/share/gb_file_temp.h
++++ b/main/share/gb_file_temp.h
+@@ -202,11 +202,11 @@ void FILE_init(void)
+ 	snprintf(file_buffer, sizeof(file_buffer), FILE_TEMP_PREFIX, (int)getuid());
+ 	(void)mkdir(file_buffer, S_IRWXU);
+ 
+-	if (lstat(file_buffer, &info) == 0 && S_ISDIR(info.st_mode) && chown(file_buffer, getuid(), getgid()) == 0 && chmod(file_buffer, S_IRWXU) == 0)
++	if (lstat(file_buffer, &info) == 0 && S_ISDIR(info.st_mode) && /*chown(file_buffer, getuid(), getgid()) == 0 &&*/ chmod(file_buffer, S_IRWXU) == 0)
+ 	{
+ 		snprintf(file_buffer, sizeof(file_buffer), FILE_TEMP_DIR, (int)getuid(), (int)getpid());
+ 		(void)mkdir(file_buffer, S_IRWXU);
+-		if (lstat(file_buffer, &info) == 0 && S_ISDIR(info.st_mode) && chown(file_buffer, getuid(), getgid()) == 0 && chmod(file_buffer, S_IRWXU) == 0)
++		if (lstat(file_buffer, &info) == 0 && S_ISDIR(info.st_mode) && /*chown(file_buffer, getuid(), getgid()) == 0 &&*/ chmod(file_buffer, S_IRWXU) == 0)
+ 			return;
+ 	}
+ 
+-- 
+2.25.1
+

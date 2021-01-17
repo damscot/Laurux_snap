@@ -1,0 +1,19 @@
+Description: Reintroduce my_bool to fix build with MySQL 8
+Author: Andreas Hasenack <andreas@canonical.com>
+Bug-Ubuntu: https://bugs.launchpad.net/bugs/1863026
+Forwarded: no
+Last-Update: 2020-02-12
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+diff --git a/gb.db.mysql/src/main.c b/gb.db.mysql/src/main.c
+index f2f86fc..4404d7e 100644
+--- a/gb.db.mysql/src/main.c
++++ b/gb.db.mysql/src/main.c
+@@ -30,6 +30,7 @@
+ #include <time.h>
+ 
+ #include <mysql.h>
++typedef bool my_bool;
+ 
+ #include "gb.db.proto.h"
+ #include "main.h"
