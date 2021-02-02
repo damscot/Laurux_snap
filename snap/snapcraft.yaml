@@ -16,7 +16,7 @@ icon: 'Icones/Larus.png'
 #license: 'GPL-3.0'
 base: core20
 architectures: 
-- build-on: amd64
+- build-on: [amd64, arm64, armhf]
 
 apps:
   Laurux:
@@ -110,6 +110,16 @@ layout:
     bind-file: $SNAP/usr/lib/x86_64-linux-gnu/libc_nonshared.a
   /etc/sane.d:
     bind: $SNAP/etc/sane.d
+  /usr/share/locale:
+    bind: $SNAP/usr/share/locale
+  /usr/lib/locale:
+    bind: $SNAP/usr/lib/locale
+  /usr/share/locale-langpack:
+    bind: $SNAP/usr/share/locale-langpack
+  /usr/share/i18n:
+    bind: $SNAP/usr/share/i18n
+  /etc/default/locale:
+    bind-file: $SNAP/etc/default/locale
 
 parts:
   laurux-pos-build:
@@ -365,6 +375,18 @@ parts:
       #- qtwebengine5-dev try to reduce snap size
       - sane-utils
       - unixodbc
+      # Language pack for locales
+      - language-pack-fr
+      - language-pack-fr-base
+      - language-pack-en
+      - language-pack-en-base
+      - language-pack-gnome-fr
+      - language-pack-kde-fr
+    filesets:
+      exclude-sane-files:
+      - -etc/sane.d/*
+    stage:
+      - $exclude-sane-files
     after:
       -  desktop-qt5
 
@@ -407,16 +429,19 @@ parts:
     build-packages:
       # Locales gen
       - locales
+      - locales-all
       - libc-bin 
     override-build: |
       snapcraftctl build
-      echo "fr_FR ISO-8859-1" >> /etc/locale.gen
+      echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
       echo "fr_FR.UTF-8 UTF-8" >> /etc/locale.gen
-      echo "fr_FR@euro ISO-8859-15" >> /etc/locale.gen
+      echo "LANG=\"fr_FR.UTF-8\"" > /etc/default/locale
       locale-gen
+      update-locale fr_FR.UTF-8
     stage-packages:
       # Locales use
       - locales
+      - locales-all
       - libc-bin
       # Debug Package
       - git
@@ -424,9 +449,10 @@ parts:
       - strace
     override-prime: |
       snapcraftctl prime
+      echo "LANG=\"fr_FR.UTF-8\"" > $SNAPCRAFT_PRIME/etc/default/locale
       mkdir -p $SNAPCRAFT_PRIME/usr/lib/locale
       install /usr/lib/locale/locale-archive $SNAPCRAFT_PRIME/usr/lib/locale/
-      echo "connect_timeout = 60" >> $SNAPCRAFT_PRIME/etc/sane.d/net.conf
+      echo "connect_timeout = 60" > $SNAPCRAFT_PRIME/etc/sane.d/net.conf
       echo "127.0.0.1" >> $SNAPCRAFT_PRIME/etc/sane.d/net.conf
     organize:
       Laurux: bin/Laurux
@@ -445,6 +471,7 @@ parts:
           cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
       done
       rm -rf $SNAPCRAFT_PRIME/usr/share/doc*
+      find $SNAPCRAFT_PRIME/usr/lib/locale/ -mindepth 1 -maxdepth 1 -type d -not -name "*fr*" -not -name "*FR*" -not -name "*aa_DJ*" -not -name "*de_AT*" -not -name "*an_ES*" -not -name "C*" -exec rm -rf "{}" \;
 
   #cleanup:
   #  after:  # Make this part run last; list all your other parts here
