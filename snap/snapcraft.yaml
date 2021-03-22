@@ -471,6 +471,8 @@ parts:
           cd "/snap/$snap/current" && find . -type f,l -exec rm -f "$SNAPCRAFT_PRIME/{}" \;
       done
       rm -rf $SNAPCRAFT_PRIME/usr/share/doc*
+      #saned.service is not use because no saned in snap environement
+      rm -rf $SNAPCRAFT_PRIME/lib/systemd/system/saned.service
       find $SNAPCRAFT_PRIME/usr/lib/locale/ -mindepth 1 -maxdepth 1 -type d -not -name "*fr*" -not -name "*FR*" -not -name "*aa_DJ*" -not -name "*de_AT*" -not -name "*an_ES*" -not -name "C*" -exec rm -rf "{}" \;
 
   #cleanup:
