@@ -1,6 +1,6 @@
 name: laurux
 #title: 'Laurux'
-version: '3.68.6'
+version: '3.68.7'
 summary: Gestion Entreprise, Caisse Point de Vente GNU GPL Français
 description: |
   Distribué sous licence GPL Laurux est un logiciel de gestion (PGI)
@@ -124,7 +124,7 @@ layout:
 parts:
   laurux-pos-build:
     source: https://github.com/damscot/Laurux-Pos.git
-    source-tag: 'v3.25.6'
+    source-tag: 'v3.25.7'
     #source-branch: 'master'
     plugin: make
     build-packages:
@@ -143,7 +143,7 @@ parts:
   
   laurux-build:
     source: https://github.com/damscot/Laurux.git
-    source-tag: 'v3.68.6'
+    source-tag: 'v3.68.7'
     #source-branch: 'master'
     plugin: make
     build-packages:
