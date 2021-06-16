@@ -213,7 +213,7 @@ parts:
       - libgstreamer-plugins-base1.0-dev
       - libcairo2-dev
       - libgsl-dev
-      - libncurses5-dev
+      - libncurses-dev
       - libgmime-2.6-dev
       - llvm-dev
       - llvm
@@ -303,7 +303,7 @@ parts:
       - libmodplug1
       - libmpg123-0
       - libmysqlclient21
-      - libncurses5
+      - libncurses6
       - libnghttp2-14
       - libnspr4
       - libnss3
